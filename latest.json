@@ -1,6 +1,6 @@
 {
-  "version": "1.2.0",
-  "notes": "GalleryKnife is now signed with its own permanent release key.\n\nIMPORTANT if you already have an older version (1.0 to 1.1.1): Android will not update it in place because the signing key changed. Uninstall the old version first, then install this one. Anything hidden in the Private album and named faces in the old version are erased on uninstall, so restore your hidden photos to the gallery first (open a photo in Private and tap Restore). From this version on, updates install normally inside the app.\n\nNew installs are not affected.",
-  "url": "https://github.com/whymeaxe/galleryknife/releases/download/v1.2.0/GalleryKnife-1.2.0.apk",
-  "sha256": "4023676c3bfe681d428cb32026310ecee31e1ce29474756f10401f58a50b8c2a"
+  "version": "1.2.1",
+  "notes": "Now installs on many more phones.\n\n- Works on Android 8 and newer (it needed Android 11 before)\n- Includes 32-bit phones, which many budget phones use\n- Smaller download\n\nIf you installed 1.2.0, this updates in place from inside the app. If you have 1.0 to 1.1.1, uninstall it first (Android will not update across the signing-key change). Restore anything hidden in the Private album before uninstalling.\n\nOn Android 8 to 10 a few things work slightly differently: deleting photos needs the storage permission, and the Private album uses your screen lock or fingerprint.",
+  "url": "https://github.com/whymeaxe/galleryknife/releases/download/v1.2.1/GalleryKnife-1.2.1.apk",
+  "sha256": "c5d2b91f6a982c94bd711f148cc8c34101c0566d632c9671d9d6cc0ed449e7c7"
 }
