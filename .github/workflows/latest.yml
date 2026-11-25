@@ -27,7 +27,7 @@ jobs:
           j = json.load(open('rel.json'))
           apk = [a for a in j['assets'] if a['name'].lower().endswith('.apk')][0]
           sha = re.search(r'SHA-?256[:\s]+([0-9a-fA-F]{64})', j['body'])
-          notes = '\n'.join(l for l in j['body'].splitlines() if 'sha' not in l.lower()).strip()
+          notes = '\n'.join(l for l in j['body'].splitlines() if not l.strip().lower().startswith('sha')).strip()
           out = {'version': j['tagName'].lstrip('vV'), 'notes': notes, 'url': apk['url'], 'sha256': sha.group(1) if sha else ''}
           json.dump(out, open('latest.json', 'w'), indent=2)
           PY

@@ -61,7 +61,7 @@ object Updater {
             url ?: return@runCatching null
             val body = j.optString("body")
             val sha = Regex("SHA-?256[:\\s]+([0-9a-fA-F]{64})").find(body)?.groupValues?.get(1)
-            Info(j.getString("tag_name").trimStart('v', 'V'), body.lines().filterNot { it.contains("SHA", true) }.joinToString("\n").trim(), url, sha)
+            Info(j.getString("tag_name").trimStart('v', 'V'), body.lines().filterNot { it.trim().startsWith("SHA", true) }.joinToString("\n").trim(), url, sha)
         }.getOrNull()
     }
 
