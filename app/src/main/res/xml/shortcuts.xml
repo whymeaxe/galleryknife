@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="search"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_search"
+        android:shortcutLongLabel="@string/sc_search_long">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.hk.gallery"
+            android:targetClass="com.hk.gallery.MainActivity">
+            <extra android:name="gk_go" android:value="search" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="private"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_private"
+        android:shortcutLongLabel="@string/sc_private_long">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.hk.gallery"
+            android:targetClass="com.hk.gallery.MainActivity">
+            <extra android:name="gk_go" android:value="private" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="files"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_files"
+        android:shortcutLongLabel="@string/sc_files_long">
+        <intent
+            android:action="android.intent.action.MAIN"
+            android:targetPackage="com.hk.gallery"
+            android:targetClass="com.hk.gallery.MainActivity">
+            <extra android:name="gk_go" android:value="files" />
+        </intent>
+    </shortcut>
+</shortcuts>

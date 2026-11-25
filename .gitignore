@@ -1,0 +1,17 @@
+# Build output and tooling
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+
+# Signing keys and secrets (never commit)
+*.jks
+*.keystore
+keystore.properties
+google-services.json
+
+# Personal and test files
+*.apk
+*.aab

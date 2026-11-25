@@ -1,0 +1,111 @@
+GalleryKnife Source-Available License (GKSAL) v1.1
+
+Copyright (c) 2026 Himanshu Khandelwal. All rights reserved.
+
+"GalleryKnife", the GalleryKnife logo, the interface design, and the credit
+"Designed and made by Himanshu Khandelwal" are the property of Himanshu Khandelwal
+(the "Author").
+
+This is a SOURCE-AVAILABLE licence, not an open-source licence. You may read the
+source code and use the app for yourself, but you may not copy, share or sell it,
+and you may not use it for business without a Commercial Licence, as set out below.
+
+1. WHAT YOU MAY DO (personal, non-commercial use only)
+   a. Download the official GalleryKnife app and use it on your own devices for
+      personal, non-commercial purposes, free of charge.
+   b. Read and study the source code to learn how it works, and to check its
+      privacy behaviour and security.
+   c. Build the app from this source for your own personal use only, without
+      changing the credit, name or branding described in section 4.
+   d. Report bugs, security issues and suggestions to the Author.
+
+2. WHAT YOU MAY NOT DO
+   a. Copy, redistribute, publish, mirror, upload or share the source code, the
+      compiled app (APK or any other form), or any part of either, in any way, to
+      any person or place (other than as GitHub's own terms of service require
+      for viewing and forking this repository on GitHub).
+   b. Sell, rent, license, sublicense or otherwise commercially exploit the app,
+      the source code, or any part of them, including offering them for payment,
+      with advertising, as part of a paid product or service, or as a paid
+      download or subscription.
+   c. Create, publish or distribute modified, derivative, rebranded or "re-skinned"
+      versions of the app or code, or use substantial parts of the code in another
+      project or app.
+   d. Remove, hide or alter the credit "Designed and made by Himanshu Khandelwal",
+      the app name, the logo, or any copyright notice, in the app, the source code
+      or any documentation.
+   e. Use the name "GalleryKnife", the logo or the Author's name to suggest that
+      another product is made, approved or endorsed by the Author.
+   f. Use the code, design or other content to train machine-learning models, or to
+      build a competing or similar product.
+   g. Attempt to remove, bypass or reverse any licence, protection or credit.
+
+3. COMMERCIAL AND BUSINESS USE REQUIRES A COMMERCIAL LICENCE ("CUSTOM PACK")
+   a. Any use of the app or code by or for a company, business, self-employed
+      person acting in business, organisation, school, institution, government
+      body, or for any purpose that earns money or other commercial benefit,
+      including installing it on devices owned or issued by a business, is
+      "commercial use". Commercial use is NOT permitted under this licence.
+   b. To use GalleryKnife commercially you must first buy a Commercial Licence,
+      called a "Custom Pack", directly from the Author. The scope, price, number
+      of devices or users, branding, support and any custom work are agreed with
+      the Author in writing before use begins.
+   c. A Commercial Licence is personal to the buyer, is not transferable and does
+      not allow resale, redistribution or sublicensing unless the written
+      agreement says so.
+   d. To ask for a Commercial Licence, contact the Author at
+      https://himanshukhandelwal.in
+   e. If you are unsure whether your use is commercial, treat it as commercial and
+      ask first.
+
+4. CREDIT AND BRANDING
+   The credit "Designed and made by Himanshu Khandelwal" and its link must remain
+   visible and unchanged wherever it appears. This requirement continues for as
+   long as you use any part of this work, unless a written Commercial Licence from
+   the Author says otherwise.
+
+5. RIGHTS RESERVED
+   All rights not expressly granted in this licence are reserved by the Author.
+   No other right, licence or permission is given, whether by implication,
+   estoppel or otherwise. The Author may change the licence for future versions,
+   including to make them paid or commercial. Versions already received by you
+   remain under the licence they came with.
+
+6. UPDATES
+   The app can check for new versions of itself online and offer to download them.
+   This check only asks for the latest version number and notes and sends no
+   personal data or content from your device. Updates are provided under this
+   licence. The Author may stop providing updates at any time.
+
+7. THIRD-PARTY COMPONENTS
+   This licence applies only to the Author's own work. Third-party components,
+   libraries, fonts and models used by the app are owned by their respective
+   owners and are used under their own licences, listed in THIRD_PARTY_NOTICES.md.
+   Nothing in this licence changes those licences or restricts your rights under
+   them.
+
+8. CONTRIBUTIONS
+   If you send the Author code, ideas, text or designs, you grant the Author a
+   perpetual, worldwide, royalty-free, irrevocable licence to use, modify and
+   distribute them, including commercially, and you confirm you have the right to
+   do so. You receive no ownership or payment for them.
+
+9. NO WARRANTY
+   THE APP AND CODE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+   PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE APP OR CODE,
+   INCLUDING LOSS OF PHOTOS, FILES OR DATA. YOU ARE RESPONSIBLE FOR YOUR OWN
+   BACKUPS. THE PRIVATE ALBUM ENCRYPTS FILES ON THE DEVICE; IF YOU LOSE ACCESS TO
+   THE DEVICE LOCK OR KEY, THE AUTHOR CANNOT RECOVER THEM.
+
+10. TERMINATION
+   This licence ends automatically if you break any of its terms. When it ends you
+   must stop using the app and delete all copies of the source code and builds.
+   Sections 2, 3, 4, 5, 8 and 9 survive termination.
+
+11. ENFORCEMENT
+   The Author may take action under copyright and other law, including takedown
+   requests, against any use that breaks this licence.
+
+Contact: https://himanshukhandelwal.in

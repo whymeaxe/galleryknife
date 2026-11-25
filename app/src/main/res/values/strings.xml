@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">GalleryKnife</string>
+    <string name="sc_search">Search</string>
+    <string name="sc_search_long">Search photos</string>
+    <string name="sc_private">Private</string>
+    <string name="sc_private_long">Open Private album</string>
+    <string name="sc_files">Files</string>
+    <string name="sc_files_long">Open Files</string>
+</resources>
