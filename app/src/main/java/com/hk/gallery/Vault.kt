@@ -154,7 +154,7 @@ object Vault {
                 val id = UUID.randomUUID().toString()
                 ctx.contentResolver.openInputStream(m.uri)!!.use { encryptTo(it, File(dir, "$id.bin")) }
                 runCatching {
-                    val t = ctx.contentResolver.loadThumbnail(m.uri, Size(512, 512), null)
+                    val t = Compat.thumbnail(ctx, m.uri, m.isVideo, 512)
                     val jpg = ByteArrayOutputStream().also { t.compress(Bitmap.CompressFormat.JPEG, 85, it) }.toByteArray()
                     encryptTo(ByteArrayInputStream(jpg), File(dir, "$id.thumb"))
                 }
@@ -193,16 +193,9 @@ object Vault {
     fun clearTemp(ctx: Context) { File(ctx.cacheDir, "vault_play").deleteRecursively() }
 
     fun restore(ctx: Context, e: Entry): Boolean = runCatching {
-        val video = e.video
-        val cv = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, e.name)
-            put(MediaStore.MediaColumns.MIME_TYPE, e.mime)
-            put(MediaStore.MediaColumns.RELATIVE_PATH, if (video) "Movies/GalleryKnife" else "Pictures/GalleryKnife")
-            put(MediaStore.MediaColumns.DATE_TAKEN, e.date)
-        }
-        val coll = if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val uri = ctx.contentResolver.insert(coll, cv)!!
-        ctx.contentResolver.openOutputStream(uri)!!.use { decryptTo(File(dir, "${e.id}.bin"), it) }
+        val o = Compat.openOut(ctx, e.name, e.mime, e.video, e.date)!!
+        o.stream.use { decryptTo(File(dir, "${e.id}.bin"), it) }
+        o.finish()
         remove(e)
         true
     }.getOrDefault(false)
@@ -221,19 +214,26 @@ fun Context.findActivity(): Activity? {
     return null
 }
 
-/** Asks for fingerprint, face or the screen lock. */
+/** Asks for fingerprint, face or the screen lock. Older Android versions support fewer combinations, so we try each. */
 fun authenticate(act: FragmentActivity, title: String, onSuccess: () -> Unit, onFail: (String) -> Unit) {
-    val auth = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
-    if (BiometricManager.from(act).canAuthenticate(auth) != BiometricManager.BIOMETRIC_SUCCESS) {
-        onFail("Set a screen lock or fingerprint on this phone to use the Private album."); return
+    val bm = BiometricManager.from(act)
+    val strong = BiometricManager.Authenticators.BIOMETRIC_STRONG
+    val weak = BiometricManager.Authenticators.BIOMETRIC_WEAK
+    val cred = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+    val auth = listOf(strong or cred, weak or cred, cred, weak)
+        .firstOrNull { bm.canAuthenticate(it) == BiometricManager.BIOMETRIC_SUCCESS }
+    if (auth == null) {
+        // Android 9 and 10 cannot always use the system prompt with only a PIN or pattern: ask for the screen lock directly.
+        (act as? MainActivity)?.requestCredential(title, onSuccess, onFail) ?: onFail("Set a screen lock or fingerprint on this phone to use the Private album.")
+        return
     }
     val prompt = BiometricPrompt(act, ContextCompat.getMainExecutor(act), object : BiometricPrompt.AuthenticationCallback() {
         override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) { onSuccess() }
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence) { onFail(errString.toString()) }
     })
-    prompt.authenticate(
-        BiometricPrompt.PromptInfo.Builder().setTitle(title).setSubtitle("Your private files stay encrypted on this phone").setAllowedAuthenticators(auth).build()
-    )
+    val info = BiometricPrompt.PromptInfo.Builder().setTitle(title).setSubtitle("Your private files stay encrypted on this phone").setAllowedAuthenticators(auth)
+    if (auth and cred == 0) info.setNegativeButtonText("Cancel")
+    prompt.authenticate(info.build())
 }
 
 @Composable

@@ -98,6 +98,20 @@ private fun copyToCache(ctx: android.content.Context, uri: Uri, mime: String): F
 
 class MainActivity : FragmentActivity() {
     private val incoming = mutableStateOf<Incoming?>(null)
+    private var credCb: Pair<() -> Unit, (String) -> Unit>? = null
+    private val credLauncher = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { r ->
+        val cb = credCb; credCb = null
+        if (r.resultCode == Activity.RESULT_OK) cb?.first?.invoke() else cb?.second?.invoke("Cancelled")
+    }
+
+    /** Asks for the phone's PIN, pattern or password directly (used when the system prompt is not available). */
+    fun requestCredential(title: String, onOk: () -> Unit, onFail: (String) -> Unit) {
+        val km = getSystemService(android.app.KeyguardManager::class.java)
+        val i = if (km != null && km.isDeviceSecure) km.createConfirmDeviceCredentialIntent(title, "Your private files stay encrypted on this phone") else null
+        if (i == null) { onFail("Set a screen lock or fingerprint on this phone to use the Private album."); return }
+        credCb = onOk to onFail
+        credLauncher.launch(i)
+    }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -130,21 +144,23 @@ private fun Root(store: Store, incoming: MutableState<Incoming?>, act: MainActiv
     val scope = rememberCoroutineScope()
     val perms = remember {
         if (Build.VERSION.SDK_INT >= 33) arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+        else if (Build.VERSION.SDK_INT <= 29) arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         else arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
     }
     fun has() = perms.all { ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED } ||
         (Build.VERSION.SDK_INT >= 34 && ContextCompat.checkSelfPermission(ctx, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED) == PackageManager.PERMISSION_GRANTED)
     var granted by remember { mutableStateOf(has()) }
-    var allFiles by remember { mutableStateOf(Environment.isExternalStorageManager()) }
+    var allFiles by remember { mutableStateOf(Compat.hasAllFiles(ctx)) }
     var skipAll by remember { mutableStateOf(Prefs.flag("skip_all_files")) }
     val askPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         granted = has(); if (granted) store.refreshAndIndex()
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        granted = has(); allFiles = Environment.isExternalStorageManager()
+        granted = has(); allFiles = Compat.hasAllFiles(ctx)
         if (granted) store.refreshAndIndex()
     }
     fun askAllFiles() {
+        if (Build.VERSION.SDK_INT < 30) { askPerm.launch(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)); return }
         val i = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:${ctx.packageName}"))
         runCatching { ctx.startActivity(i) }.onFailure { ctx.startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)) }
     }
@@ -199,8 +215,7 @@ private fun Root(store: Store, incoming: MutableState<Incoming?>, act: MainActiv
             is Incoming.View -> {
                 val mime = inc.mime ?: ctx.contentResolver.getType(inc.uri) ?: ""
                 if (mime.startsWith("image/") || mime.startsWith("video/")) {
-                    val id = runCatching { ContentUris.parseId(inc.uri) }.getOrNull()
-                    val found = if (inc.uri.authority == "media" && id != null) store.media.value.firstOrNull { it.id == id } else null
+                    val found = if (inc.uri.authority == "media") store.media.value.firstOrNull { it.uri == inc.uri } else null
                     val m = found ?: Media(inc.uri.hashCode().toLong(), inc.uri, mime.startsWith("video/"), System.currentTimeMillis(), 0, 0, 0L, "", "photo", 0L)
                     viewer = ViewerState(listOf(m), 0)
                 } else {
@@ -227,12 +242,14 @@ private fun Root(store: Store, incoming: MutableState<Incoming?>, act: MainActiv
     /** Delete with no OS prompt when All-files access is on; otherwise falls back to the system confirmation. */
     fun delete(items: List<Media>) {
         if (items.isEmpty()) return
-        if (Environment.isExternalStorageManager()) {
+        if (Compat.hasAllFiles(ctx)) {
             scope.launch(Dispatchers.IO) {
                 val n = store.deleteDirect(items)
                 scope.launch { Toast.makeText(ctx, "Deleted $n item${if (n == 1) "" else "s"}", Toast.LENGTH_SHORT).show() }
             }
             viewer = null; sel.clear()
+        } else if (Build.VERSION.SDK_INT < 30) {
+            Toast.makeText(ctx, "Allow file access in Settings to delete photos", Toast.LENGTH_LONG).show()
         } else {
             val pi = MediaStore.createDeleteRequest(ctx.contentResolver, items.map { it.uri })
             deleteLauncher.launch(IntentSenderRequest.Builder(pi.intentSender).build())

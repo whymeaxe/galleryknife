@@ -18,11 +18,11 @@ android {
 
     defaultConfig {
         applicationId = "com.hk.gallery"
-        minSdk = 30
+        minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.2.0"
-        ndk { abiFilters += listOf("arm64-v8a") }
+        versionCode = 5
+        versionName = "1.2.1"
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a") }
     }
     signingConfigs {
         if (keystoreProps.containsKey("storeFile")) {

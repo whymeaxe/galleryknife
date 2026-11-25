@@ -138,7 +138,7 @@ class Indexer(private val store: Store) {
         ocr: com.google.mlkit.vision.text.TextRecognizer,
         detector: com.google.mlkit.vision.face.FaceDetector,
     ) {
-        var bmp = ctx.contentResolver.loadThumbnail(m.uri, Size(1024, 1024), null)
+        var bmp = Compat.thumbnail(ctx, m.uri, m.isVideo, 1024)
         if (bmp.config == Bitmap.Config.HARDWARE) bmp = bmp.copy(Bitmap.Config.ARGB_8888, false)
         val img = InputImage.fromBitmap(bmp, 0)
 

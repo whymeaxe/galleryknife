@@ -52,9 +52,11 @@ fun GlassRoot(modifier: Modifier = Modifier, background: @Composable BoxScope.()
         Box(
             Modifier.matchParentSize().drawWithContent {
                 val sz = IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1))
-                src.record(this, layoutDirection, sz) { this@drawWithContent.drawContent() }
-                drawLayer(src)
-                if (enabled) blurred.record(this, layoutDirection, sz) { drawLayer(src) }
+                if (enabled) {
+                    src.record(this, layoutDirection, sz) { this@drawWithContent.drawContent() }
+                    drawLayer(src)
+                    blurred.record(this, layoutDirection, sz) { drawLayer(src) }
+                } else drawContent()
             },
             content = background,
         )

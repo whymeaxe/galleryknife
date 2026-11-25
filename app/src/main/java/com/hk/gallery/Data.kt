@@ -66,29 +66,51 @@ class Meta(val labels: Set<String>, val ocr: String)
 object MediaRepo {
     fun load(ctx: Context): List<Media> {
         val out = ArrayList<Media>()
-        val proj = arrayOf(
-            MediaStore.Files.FileColumns._ID, MediaStore.Files.FileColumns.MEDIA_TYPE,
-            MediaStore.MediaColumns.DATE_TAKEN, MediaStore.MediaColumns.DATE_ADDED,
-            MediaStore.MediaColumns.WIDTH, MediaStore.MediaColumns.HEIGHT, MediaStore.MediaColumns.DURATION,
-            MediaStore.MediaColumns.BUCKET_DISPLAY_NAME, MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.SIZE,
-        )
-        val sel = "${MediaStore.Files.FileColumns.MEDIA_TYPE}=? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE}=?"
-        val args = arrayOf(
-            MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString(),
-            MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString(),
-        )
-        ctx.contentResolver.query(MediaStore.Files.getContentUri("external"), proj, sel, args, null)?.use { c ->
-            while (c.moveToNext()) {
-                val id = c.getLong(0)
-                val video = c.getInt(1) == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
-                val taken = c.getLong(2)
-                val added = c.getLong(3) * 1000
-                val base = if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-                out += Media(
-                    id, ContentUris.withAppendedId(base, id), video, if (taken > 0) taken else added,
-                    c.getInt(4), c.getInt(5), c.getLong(6), c.getString(7) ?: "", c.getString(8) ?: "", c.getLong(9),
-                )
+        if (android.os.Build.VERSION.SDK_INT >= 29) {
+            val proj = arrayOf(
+                MediaStore.Files.FileColumns._ID, MediaStore.Files.FileColumns.MEDIA_TYPE,
+                MediaStore.MediaColumns.DATE_TAKEN, MediaStore.MediaColumns.DATE_ADDED,
+                MediaStore.MediaColumns.WIDTH, MediaStore.MediaColumns.HEIGHT, MediaStore.MediaColumns.DURATION,
+                MediaStore.MediaColumns.BUCKET_DISPLAY_NAME, MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.SIZE,
+            )
+            val sel = "${MediaStore.Files.FileColumns.MEDIA_TYPE}=? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE}=?"
+            val args = arrayOf(
+                MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString(),
+                MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString(),
+            )
+            ctx.contentResolver.query(MediaStore.Files.getContentUri("external"), proj, sel, args, null)?.use { c ->
+                while (c.moveToNext()) {
+                    val id = c.getLong(0)
+                    val video = c.getInt(1) == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
+                    val taken = c.getLong(2)
+                    val added = c.getLong(3) * 1000
+                    val base = if (video) MediaStore.Video.Media.EXTERNAL_CONTENT_URI else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    out += Media(
+                        id, ContentUris.withAppendedId(base, id), video, if (taken > 0) taken else added,
+                        c.getInt(4), c.getInt(5), c.getLong(6), c.getString(7) ?: "", c.getString(8) ?: "", c.getLong(9),
+                    )
+                }
             }
+        } else {
+            // Android 8 to 9: photos and videos live in separate tables, so read each and keep their ids apart.
+            fun read(base: Uri, video: Boolean) {
+                val proj = if (video) arrayOf("_id", "datetaken", "date_added", "width", "height", "duration", "bucket_display_name", "_display_name", "_size")
+                else arrayOf("_id", "datetaken", "date_added", "width", "height", "bucket_display_name", "_display_name", "_size")
+                ctx.contentResolver.query(base, proj, null, null, null)?.use { c ->
+                    while (c.moveToNext()) {
+                        val raw = c.getLong(0)
+                        val taken = c.getLong(1); val added = c.getLong(2) * 1000
+                        val k = if (video) 1 else 0
+                        out += Media(
+                            if (video) raw or (1L shl 40) else raw, ContentUris.withAppendedId(base, raw), video, if (taken > 0) taken else added,
+                            c.getInt(3), c.getInt(4), if (video) c.getLong(5) else 0L,
+                            c.getString(5 + k) ?: "", c.getString(6 + k) ?: "", c.getLong(7 + k),
+                        )
+                    }
+                }
+            }
+            read(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, false)
+            read(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
         }
         out.sortByDescending { it.date }
         return out

@@ -52,14 +52,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 object ImageTools {
-    fun decode(ctx: Context, m: Media, maxDim: Int): Bitmap {
-        val src = ImageDecoder.createSource(ctx.contentResolver, m.uri)
-        return ImageDecoder.decodeBitmap(src) { dec, info, _ ->
-            val s = min(1f, maxDim.toFloat() / max(info.size.width, info.size.height))
-            dec.setTargetSize((info.size.width * s).roundToInt().coerceAtLeast(1), (info.size.height * s).roundToInt().coerceAtLeast(1))
-            dec.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-        }
-    }
+    fun decode(ctx: Context, m: Media, maxDim: Int): Bitmap = Compat.decode(ctx, m.uri, maxDim)
 
     /** On-device text recognition at a resolution good enough for documents. */
     suspend fun ocr(ctx: Context, m: Media): String = withContext(Dispatchers.Default) {
@@ -70,14 +63,9 @@ object ImageTools {
 
     fun saveCopy(ctx: Context, bmp: Bitmap): Boolean {
         val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        val cv = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "GalleryKnife_$stamp.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/GalleryKnife")
-            put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
-        }
-        val uri = ctx.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv) ?: return false
-        ctx.contentResolver.openOutputStream(uri)?.use { bmp.compress(Bitmap.CompressFormat.JPEG, 95, it) } ?: return false
+        val out = Compat.openOut(ctx, "GalleryKnife_$stamp.jpg", "image/jpeg", false, System.currentTimeMillis()) ?: return false
+        out.stream.use { bmp.compress(Bitmap.CompressFormat.JPEG, 95, it) }
+        out.finish()
         return true
     }
 }

@@ -76,13 +76,9 @@ fun TrimScreen(m: Media, onClose: () -> Unit, onSaved: () -> Unit) {
                     scope.launch(Dispatchers.IO) {
                         val ok = runCatching {
                             val stamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-                            val cv = ContentValues().apply {
-                                put(MediaStore.Video.Media.DISPLAY_NAME, "GalleryKnife_trim_$stamp.mp4")
-                                put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-                                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/GalleryKnife")
-                            }
-                            val uri = ctx.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, cv)!!
-                            ctx.contentResolver.openOutputStream(uri)!!.use { o -> out.inputStream().use { it.copyTo(o) } }
+                            val o = Compat.openOut(ctx, "GalleryKnife_trim_$stamp.mp4", "video/mp4", true, System.currentTimeMillis())!!
+                            o.stream.use { os -> out.inputStream().use { it.copyTo(os) } }
+                            o.finish()
                         }.isSuccess
                         out.delete()
                         withContext(Dispatchers.Main) {

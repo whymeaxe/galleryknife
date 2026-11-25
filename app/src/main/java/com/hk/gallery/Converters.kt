@@ -21,7 +21,7 @@ class Jpeg(val bytes: ByteArray, val w: Int, val h: Int)
 object Converters {
 
     fun outputDir(ctx: Context): File {
-        val dir = if (Environment.isExternalStorageManager()) File(Environment.getExternalStorageDirectory(), "Documents/GalleryKnife")
+        val dir = if (Compat.hasAllFiles(ctx)) File(Environment.getExternalStorageDirectory(), "Documents/GalleryKnife")
         else File(ctx.getExternalFilesDir(null), "Converted")
         dir.mkdirs()
         return dir
@@ -30,12 +30,7 @@ object Converters {
     private fun stamp() = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
 
     fun loadJpeg(ctx: Context, m: Media, maxDim: Int = 1800): Jpeg {
-        val src = ImageDecoder.createSource(ctx.contentResolver, m.uri)
-        val bmp = ImageDecoder.decodeBitmap(src) { dec, info, _ ->
-            val s = min(1f, maxDim.toFloat() / maxOf(info.size.width, info.size.height))
-            dec.setTargetSize((info.size.width * s).roundToInt().coerceAtLeast(1), (info.size.height * s).roundToInt().coerceAtLeast(1))
-            dec.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-        }
+        val bmp = Compat.decode(ctx, m.uri, maxDim)
         val out = ByteArrayOutputStream()
         bmp.compress(Bitmap.CompressFormat.JPEG, 86, out)
         val j = Jpeg(out.toByteArray(), bmp.width, bmp.height)
