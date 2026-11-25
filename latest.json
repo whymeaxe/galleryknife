@@ -1,6 +1,6 @@
 {
   "version": "1.1.1",
-  "notes": "",
+  "notes": "Update checks are now reliable on busy networks (school Wi-Fi, shared mobile data).",
   "url": "https://github.com/whymeaxe/galleryknife/releases/download/v1.1.1/GalleryKnife-1.1.1.apk",
   "sha256": "b171585d6a48039e73999d201e83c2e71273feff5b8223d4f2ad04b79a293732"
 }
