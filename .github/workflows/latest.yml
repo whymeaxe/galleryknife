@@ -1,0 +1,39 @@
+name: Update latest.json
+
+# Keeps latest.json in sync with the newest release, so the app can check for updates
+# without hitting GitHub's per-IP API rate limit.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  latest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Write latest.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view --repo "$GITHUB_REPOSITORY" --json tagName,body,assets > rel.json
+          python3 - <<'PY'
+          import json, re
+          j = json.load(open('rel.json'))
+          apk = [a for a in j['assets'] if a['name'].lower().endswith('.apk')][0]
+          sha = re.search(r'SHA-?256[:\s]+([0-9a-fA-F]{64})', j['body'])
+          notes = '\n'.join(l for l in j['body'].splitlines() if 'sha' not in l.lower()).strip()
+          out = {'version': j['tagName'].lstrip('vV'), 'notes': notes, 'url': apk['url'], 'sha256': sha.group(1) if sha else ''}
+          json.dump(out, open('latest.json', 'w'), indent=2)
+          PY
+      - name: Commit latest.json
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add latest.json
+          git diff --cached --quiet || (git commit -m "Update latest.json" && git push)

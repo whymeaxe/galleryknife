@@ -35,14 +35,23 @@ object Updater {
         return false
     }
 
+    private fun get(url: String): String? = runCatching {
+        val c = URL(url).openConnection() as HttpURLConnection
+        c.connectTimeout = 8000; c.readTimeout = 8000
+        c.setRequestProperty("Accept", "application/vnd.github+json")
+        c.setRequestProperty("User-Agent", "GalleryKnife-updater")
+        if (c.responseCode != 200) null else c.inputStream.bufferedReader().use { it.readText() }
+    }.getOrNull()
+
+    /** Reads the small latest.json kept in the repo (no rate limit). Falls back to the GitHub releases API. */
     suspend fun latest(): Info? = withContext(Dispatchers.IO) {
         runCatching {
-            val c = URL("https://api.github.com/repos/$REPO/releases/latest").openConnection() as HttpURLConnection
-            c.connectTimeout = 8000; c.readTimeout = 8000
-            c.setRequestProperty("Accept", "application/vnd.github+json")
-            c.setRequestProperty("User-Agent", "GalleryKnife-updater")
-            if (c.responseCode != 200) return@runCatching null
-            val j = JSONObject(c.inputStream.bufferedReader().use { it.readText() })
+            get("https://raw.githubusercontent.com/$REPO/main/latest.json")?.let { txt ->
+                val j = JSONObject(txt)
+                val url = j.optString("url")
+                if (url.isNotBlank()) return@runCatching Info(j.getString("version"), j.optString("notes"), url, j.optString("sha256").takeIf { it.length == 64 })
+            }
+            val j = JSONObject(get("https://api.github.com/repos/$REPO/releases/latest") ?: return@runCatching null)
             val assets = j.getJSONArray("assets")
             var url: String? = null
             for (i in 0 until assets.length()) {
